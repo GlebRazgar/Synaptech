@@ -1,4 +1,4 @@
-# Enhancing EEG Accuracy via cross modal MEG inference.
+# Ahieving BCI super-resolution via cross modal MEG inference.
 This project achives the highest EEG super-resolution increase to date! We investigate a new way of increasing BCI fidelity thorugh training a transformer model on the simultaneous EEG and MEG recordings to achieve MEG-like super-resolution on EEG headsets.
 
 ## Overview 🔎
