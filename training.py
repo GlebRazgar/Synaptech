@@ -1,7 +1,8 @@
 from dotenv import load_dotenv
 import os
 from torch.utils.data import DataLoader
-from models.models import EEGtoMEGUNet
+# from models.unet import EEGtoMEGUNet #Uncomment if not using wavelet transform
+from models.wavelet_unet import EEGtoMEGUNet # Comment out if not using wavelet transform
 import matplotlib.pyplot as plt
 import json
 import torch
@@ -15,7 +16,9 @@ import sys
 import time
 import wandb
 from dataset.shard_loader import ShardDataLoader
+from dataset.dataset_builder import DatasetDownloader
 import re  # Import the re module for regular expressions
+from dataset.wavelet_filtering import Wavelet_Transformer
 
 # Flag to indicate if termination has been requested
 termination_requested = False
@@ -144,10 +147,20 @@ def main():
         load_dotenv()
         dataset_path = os.getenv("DATASET_PATH")
 
-        logger.info("Initializing ShardDataLoader...")
-        shard_data_loader_train = ShardDataLoader(dataset_path=dataset_path, mode='train', logger=logger, verbose=verbose)
-        shard_data_loader_val = ShardDataLoader(dataset_path=dataset_path, mode='val', logger=logger, verbose=verbose)
+        logger = logging.getLogger()
+
+        #Downloads the dataset
+        DatasetDownloader(downloadAndPrepareImmediately=True, datasetPath=dataset_path, processImmediately=True, processingMode='raw', logger=logger, verbose=False)
+        
+        #Performs wavelet frequency filtering
+
+        Wavelet_Transformer(dataset_path=dataset_path, mode='all', eeg_channel=13, mag_channel=21)
+
+        shard_data_loader_train = ShardDataLoader(dataset_path=dataset_path, mode='train', logger=logger, verbose=verbose, wavelet=True)
+        shard_data_loader_val = ShardDataLoader(dataset_path=dataset_path, mode='val', logger=logger, verbose=verbose, wavelet=True)
         sample_length = 275 
+
+        print ("i think its donezo")
 
         # Initialize model
         logger.info("Initializing model...")
